@@ -1,22 +1,37 @@
 {
-  "name": "kantyna-app",
+  "name": "kantyna-app-admin",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
-    "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.11",
-    "@vitejs/plugin-react": "^3.1.0",
+    "@csstools/postcss-sass": "^5.0.1",
+    "@sveltejs/vite-plugin-svelte": "^2.0.3",
+    "@tsconfig/svelte": "^3.0.0",
+    "@types/node": "^18.15.10",
+    "autoprefixer": "^10.4.14",
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3",
+    "postcss": "^8",
+    "postcss-cli": "^10.1.0",
+    "postcss-sass": "^0.5.0",
+    "postcss-scss": "^4.0.6",
+    "sass": "^1.60.0",
+    "svelte": "^3.55.1",
+    "svelte-check": "^2.10.3",
+    "tailwindcss": "^3.2.7",
+    "tslib": "^2.5.0",
     "typescript": "^4.9.3",
     "vite": "^4.2.0"
+  },
+  "dependencies": {
+    "rxjs": "^7.8.0",
+    "svelte-fa": "^3.0.3",
+    "svelte-navigator": "^3.2.2"
   }
 }
