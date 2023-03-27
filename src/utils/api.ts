@@ -12,12 +12,16 @@ import { promiseToObservable$ } from ".";
  */
 const login$ = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/api/user/login`, {
   method: "POST",
-  credentials: "include"
+  credentials: "include",
+  body: JSON.stringify({
+    email,
+    password
+  })
 })
       .pipe(
         catchError((err) => {
           console.error(`API/Login: Error! ${err}`);
-          return throwError(() => new Error(err));
+          throw new Error(err);
         }),
         mergeMap(v => {
           if(v.status === 200) {
@@ -25,12 +29,12 @@ const login$ = (email: string, password: string) => fromFetch(`${import.meta.env
               .pipe(
                 catchError((err) => {
                   console.error(`API/Login: Error! ${err}`);
-                  return throwError(() => new Error(err));
+                  throw new Error(err);
                 })
               );
           } else {
             console.error(`API/Login: Negative response! ${v.status}`);
-            return throwError(() => new Error(v.status.toString()));
+            throw new Error(v.status.toString());
           }
         })
       );
@@ -42,26 +46,66 @@ const login$ = (email: string, password: string) => fromFetch(`${import.meta.env
  * @param username Username to be bound to new account.
  * @returns An Observable with value of null on success.
  */
-const register$ = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.API_URL}/api/user/register`, {
+const register$ = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/api/user/register`, {
   method: "POST",
-  credentials: "include"
+  credentials: "include",
+  body: JSON.stringify({
+    email,
+    password,
+    username
+  })
 })
       .pipe(
         catchError((err) => {
           console.error(`API/Register: Error! ${err}`);
-          return throwError(() => new Error(err));
+          throw new Error(err);
         }),
         map(res => {
           if(res.status !== 200) {
             console.error(`API/Register: Negative response: ${res.status}`);
-            return throwError(() => new Error(res.status.toString()));
+            throw new Error(res.status.toString());
           } else {
-            return of(null);
+            return null;
+          }
+        })
+      );
+
+/** Request a password change for the user
+ *
+ * @param token JWT representing user
+ * @param newPassword New password
+ * @param oldPassword Old password
+ *
+ * @returns An Observable with value of null on success.
+ */
+const changePassword$ = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}`, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  },
+  method: "POST",
+  credentials: "include",
+  body: JSON.stringify({
+    oldPassword,
+    newPassword
+  })
+})
+      .pipe(
+        catchError((err) => {
+          console.error(`API/Register: Error! ${err}`);
+          throw new Error(err);
+        }),
+        map(res => {
+          if(res.status === 200) {
+            return null;
+          } else {
+            console.error(`API/ChangePassword: Negative response! ${res.status}`);
+            throw new Error(res.status.toString());
           }
         })
       );
 
 export {
   login$,
-  register$
+  register$,
+  changePassword$
 };
