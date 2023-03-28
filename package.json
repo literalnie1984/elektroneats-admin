@@ -30,6 +30,8 @@
     "vite": "^4.2.0"
   },
   "dependencies": {
+    "@fortawesome/free-brands-svg-icons": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "rxjs": "^7.8.0",
     "svelte-fa": "^3.0.3",
     "svelte-navigator": "^3.2.2"
