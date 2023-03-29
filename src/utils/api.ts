@@ -2,6 +2,7 @@
 import { catchError, defer, forkJoin, from, map, mergeMap, of, throwError } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { promiseToObservable$ } from ".";
+import type { UserData } from "./user";
 
 /** Login (create JWT for) user with provided credentials.
  *
@@ -10,7 +11,7 @@ import { promiseToObservable$ } from ".";
  *
  * @returns An observable with value of JWT on success.
  */
-const login$ = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/login/`, {
+const login = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/login/`, {
   method: "POST",
   credentials: "include",
   body: JSON.stringify({
@@ -46,7 +47,7 @@ const login$ = (email: string, password: string) => fromFetch(`${import.meta.env
  * @param username Username to be bound to new account.
  * @returns An Observable with value of null on success.
  */
-const register$ = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/register/`, {
+const register = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/register/`, {
   method: "POST",
   credentials: "include",
   body: JSON.stringify({
@@ -78,7 +79,7 @@ const register$ = (email: string, password: string, username: string) => fromFet
  *
  * @returns An Observable with value of null on success.
  */
-const changePassword$ = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/change-password/`, {
+const changePassword = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/change-password/`, {
   headers: {
     Authorization: `Bearer ${token}`
   },
@@ -104,8 +105,45 @@ const changePassword$ = (token: string, newPassword: string, oldPassword: string
         })
       );
 
+/** Get data of logged in user.
+ *
+ * @param token JWT
+ *
+ * @returns An Observable with value of UserData
+ */
+const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/get-user-data`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
+  },
+  credentials: "include"
+})
+      .pipe(
+        catchError((err) => {
+          console.error(`API/GetUserData: Error! ${err}`);
+          throw new Error(err);
+        }),
+        mergeMap(res => {
+          if(res.status === 200) {
+            return promiseToObservable$(res.json());
+          } else {
+            console.error(`API/ChangePassword: Negative response! ${res.status}`);
+            throw new Error(res.status.toString());
+          }
+        }),
+        catchError((err) => {
+          console.error(`API/GetUserData: Error! ${err}`);
+          throw new Error(err);
+        }),
+        map(v => {
+          return v as UserData;
+        })
+      );
+
 export {
-  login$,
-  register$,
-  changePassword$
+  login,
+  register,
+  changePassword,
+  getUserData
 };

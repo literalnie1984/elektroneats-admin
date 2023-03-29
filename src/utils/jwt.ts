@@ -1,6 +1,13 @@
+import jwt_decode from "jwt-decode";
 import { BehaviorSubject, Observable, of } from "rxjs";
 
 type JWT = string;
+
+interface ParsedJWT {
+  sub: number;
+  is_admin: boolean;
+  exp: number;
+}
 
 /** Behavior subject containing JWT token.
  *
@@ -14,7 +21,7 @@ const JwtToken$ = new BehaviorSubject<JWT | null>(null);
  *
  * @param token JWT token
  */
-const storeJwtToken = (token: string) => {
+const storeJwtToken = (token: JWT) => {
   localStorage.setItem("jwt", token);
   JwtToken$.next(token);
 }
@@ -38,11 +45,24 @@ const clearJwtToken = () => {
 
 /** Retrieve behavior subject containing JWT token.
  */
-const retrieveJwtToken$ = (): BehaviorSubject<JWT | null> => JwtToken$;
+const retrieveJwtToken = (): BehaviorSubject<JWT | null> => JwtToken$;
 
+
+/** Decode JWT into user object.
+ *
+ * @param token JWT
+ */
+const decodeJwt = (token: JWT): ParsedJWT => {
+  return jwt_decode<ParsedJWT>(token);
+}
+
+export type {
+  JWT,
+  ParsedJWT
+};
 export {
   storeJwtToken,
   loadJwtToken,
   clearJwtToken,
-  retrieveJwtToken$
+  retrieveJwtToken
 };

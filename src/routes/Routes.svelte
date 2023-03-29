@@ -1,3 +1,26 @@
+<script lang="ts">
+  import { onMount, onDestroy } from "svelte";
+  import { Route, useLocation } from "svelte-navigator";
+  import { storeToObservable$ } from "../utils";
+  import type { Subscription } from "rxjs";
+  import { scale } from "svelte/transition";
+  import DashboardRoute from "./DashboardRoute.svelte";
+  
+  const location = useLocation();
+  let locationKey: string;
+  let location$: Subscription;
+  
+  onMount(() => {
+    location$ = storeToObservable$(location)
+      .subscribe(loc => {
+        locationKey = `${loc.pathname}${loc.hash}${loc.search}`;
+      });
+  });
+  onDestroy(() => {
+    location$.unsubscribe();
+  });
+</script>
+
 {#key locationKey}
 <div class="routes-wrapper">
   <div
@@ -15,7 +38,7 @@
     <Route path="/menu/*"></Route>
     <Route path="/dinners/*"></Route>
     <Route path="/">
-      <h1>Main route</h1>
+      <DashboardRoute />
     </Route>
     <Route>
       <h1>No match route</h1>
@@ -23,28 +46,6 @@
   </div>
 </div>
 {/key}
-
-<script lang="ts">
-  import { onMount, onDestroy } from "svelte";
-  import { Route, useLocation } from "svelte-navigator";
-  import { storeToObservable$ } from "../utils";
-  import type { Subscription } from "rxjs";
-  import { scale } from "svelte/transition";
-  
-  const location = useLocation();
-  let locationKey: string;
-  let location$: Subscription;
-  
-  onMount(() => {
-    location$ = storeToObservable$(location)
-      .subscribe(loc => {
-        locationKey = `${loc.pathname}${loc.hash}${loc.search}`;
-      });
-  });
-  onDestroy(() => {
-    location$.unsubscribe();
-  });
-</script>
 
 <style lang="scss">
  .routes-wrapper {
