@@ -4,12 +4,37 @@
   import type { Subscription } from "rxjs";
   import { storeToObservable$ } from "../utils";
   import Fa from "svelte-fa";
+  import type { SidebarItem as ISidebarItem } from "./SidebarItem.svelte";
+  import SidebarItem from "./SidebarItem.svelte";
+  import { useNavigate } from "svelte-navigator";
 
-  import { faBars } from "@fortawesome/free-solid-svg-icons";
+  import { faBars, faHome, faUtensils, faBowlFood } from "@fortawesome/free-solid-svg-icons";
   
+  const navigate = useNavigate();
   const sidebarContext: SidebarContext = getContext("sidebarContext");
   let sidebarExpanded$: Subscription;
   let expanded: boolean;
+
+  const sidebarItems: ISidebarItem[] = [
+    {
+      label: "Menu główne",
+      icon: faHome,
+      onClick: () => navigate("/"),
+      path: "^/$"
+    },
+    {
+      label: "Jadłospis",
+      icon: faUtensils,
+      onClick: () => navigate("/menu"),
+      path: "^/menu"
+    },
+    {
+      label: "Posiłki",
+      icon: faBowlFood,
+      onClick: () => navigate("/dinners"),
+      path: "^/dinners"
+    }
+  ];
 
   onMount(() => {
     sidebarExpanded$ = storeToObservable$(sidebarContext.sidebarExpanded)
@@ -21,15 +46,24 @@
 </script>
 
 <nav
-  class="sidebar"
+  class="sidebar bg-gunmetal"
   class:expanded="{expanded === true}"
 >
-  <button
-    on:click={() => sidebarContext.toggleSidebar()}
-    class="sidebar__item sidebar__expand-btn"
-  >
-    <Fa icon={faBars} />
-  </button>
+  <SidebarItem
+    className="sidebar__item--toggler"
+    item={{
+           label: "Zwiń menu",
+           icon: faBars,
+           onClick: () => sidebarContext.toggleSidebar()
+         }}
+  />
+  <section class="sidebar__items">
+    {#each sidebarItems as item}
+    <SidebarItem
+      item={item}
+    />
+    {/each}
+  </section>
 </nav>
 
 <style lang="scss">
@@ -38,6 +72,8 @@
     height: 100%;
     display: flex;
     flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
     transition: width .2s;
 
     &.expanded {
@@ -48,14 +84,8 @@
       z-index: 999;
     }
 
-    &__item {
-      width: 100%;
-      height: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      font-size: 1.2rem;
+    &__items {
+      @apply h-[100%] w-[100%] flex flex-col flex-nowrap justify-center items-center;
     }
   }
 </style>

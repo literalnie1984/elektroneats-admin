@@ -2,7 +2,7 @@
 <div class="routes-wrapper">
   <div
     transition:scale="{{ duration: 300, start: 50 }}"
-    class="routes"
+    class="route"
   >
     <Route path="/auth/*">
       <Route path="login">
@@ -12,6 +12,8 @@
         <h1>Register route</h1>
       </Route>
     </Route>
+    <Route path="/menu/*"></Route>
+    <Route path="/dinners/*"></Route>
     <Route path="/">
       <h1>Main route</h1>
     </Route>
@@ -50,7 +52,7 @@
    height: 100%;
    position: relative;
  }
- .routes {
+ .route {
    width: 100%;
    height: 100%;
    position: absolute;

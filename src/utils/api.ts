@@ -10,7 +10,7 @@ import { promiseToObservable$ } from ".";
  *
  * @returns An observable with value of JWT on success.
  */
-const login$ = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/api/user/login`, {
+const login$ = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/login/`, {
   method: "POST",
   credentials: "include",
   body: JSON.stringify({
@@ -46,7 +46,7 @@ const login$ = (email: string, password: string) => fromFetch(`${import.meta.env
  * @param username Username to be bound to new account.
  * @returns An Observable with value of null on success.
  */
-const register$ = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/api/user/register`, {
+const register$ = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/register/`, {
   method: "POST",
   credentials: "include",
   body: JSON.stringify({
@@ -78,7 +78,7 @@ const register$ = (email: string, password: string, username: string) => fromFet
  *
  * @returns An Observable with value of null on success.
  */
-const changePassword$ = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}`, {
+const changePassword$ = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/change-password/`, {
   headers: {
     Authorization: `Bearer ${token}`
   },

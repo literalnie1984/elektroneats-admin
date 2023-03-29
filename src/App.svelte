@@ -1,4 +1,4 @@
-<main>
+<main class="bg-magnolia">
   <Router>
     <SidebarContext>
       <Sidebar />
