@@ -18,9 +18,11 @@
       .subscribe(v => { userData = v; });
   });
   onDestroy(() => {
-    jwt$.unsubscribe();
-    userData$.unsubscribe();
-  })
+    if(jwt$ !== undefined)
+      jwt$.unsubscribe();
+    if(userData$ !== undefined)
+      userData$.unsubscribe();
+  });
 </script>
 
 <section class="dashboard-route">
