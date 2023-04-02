@@ -9,23 +9,33 @@
   let userData: UserData | null;
   let userData$: Subscription;
 
+  function cancelSubscriptions() {
+    if(userData$ !== undefined)
+      userData$.unsubscribe();
+  }
+  
   onMount(() => {
+    console.log("Dashboard onMount");
     userData$ = retrieveUserData()
       .subscribe(v => {
+        console.log("Dashboard - user data subscription");
         userData = v;
 
-        if(userData === null) {
+        if(v === null) {
+          console.log("Dashboard - redirecting to login page...");
+          cancelSubscriptions();
           navigate("/auth/login", {
             state: {
-              redirect: "/"
+              redirect: "/",
+              showToast: true
             }
           });
         }
       });
   });
   onDestroy(() => {
-    if(userData$ !== undefined)
-      userData$.unsubscribe();
+    console.log("Dashboard onDestroy");
+    cancelSubscriptions();
   });
 </script>
 

@@ -2,6 +2,7 @@
 import { catchError, defer, forkJoin, from, map, mergeMap, of, throwError } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { promiseToObservable$ } from ".";
+import { clearJwtToken } from "./jwt";
 import type { UserData } from "./user";
 
 /** Login (create JWT for) user with provided credentials.
@@ -11,13 +12,16 @@ import type { UserData } from "./user";
  *
  * @returns An observable with value of JWT on success.
  */
-const login = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/login/`, {
+const login = (email: string, password: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/login`, {
   method: "POST",
   credentials: "include",
   body: JSON.stringify({
     email,
     password
-  })
+  }),
+  headers: {
+    "Content-Type": "application/json"
+  }
 })
       .pipe(
         catchError((err) => {
@@ -47,14 +51,17 @@ const login = (email: string, password: string) => fromFetch(`${import.meta.env.
  * @param username Username to be bound to new account.
  * @returns An Observable with value of null on success.
  */
-const register = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/register/`, {
+const register = (email: string, password: string, username: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/register`, {
   method: "POST",
   credentials: "include",
   body: JSON.stringify({
     email,
     password,
     username
-  })
+  }),
+  headers: {
+    "Content-Type": "application/json"
+  }
 })
       .pipe(
         catchError((err) => {
@@ -79,9 +86,10 @@ const register = (email: string, password: string, username: string) => fromFetc
  *
  * @returns An Observable with value of null on success.
  */
-const changePassword = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/change-password/`, {
+const changePassword = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/change-password`, {
   headers: {
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json"
   },
   method: "POST",
   credentials: "include",
@@ -111,11 +119,10 @@ const changePassword = (token: string, newPassword: string, oldPassword: string)
  *
  * @returns An Observable with value of UserData
  */
-const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/get-user-data`, {
+const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/data`, {
   method: "GET",
   headers: {
     Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json"
   },
   credentials: "include"
 })
@@ -140,6 +147,8 @@ const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL
           return v as UserData;
         })
       );
+
+const logout = () => clearJwtToken();
 
 export {
   login,

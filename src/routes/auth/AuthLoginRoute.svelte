@@ -6,7 +6,7 @@
   import * as userUtils from "@/utils/user";
   import * as jwtUtils from "@/utils/jwt";
   import { storeToObservable$ } from "@/utils";
-  import { take, type Subscription, BehaviorSubject, Subject, catchError, tap, switchMap } from "rxjs";
+  import { take, type Subscription, BehaviorSubject, Subject, catchError, tap, switchMap, map, iif, EMPTY, of, mergeMap } from "rxjs";
   import type ToastContext from "@/components/toast/ToastContext.svelte";
   import { ToastType } from "@/components/toast/ToastContext.svelte";
   import { faKey } from "@fortawesome/free-solid-svg-icons";
@@ -17,9 +17,8 @@
   const location = useLocation();
   const toastContext = getContext<ToastContext>("toastContext");
 
-  let jwt$: Subscription;
-  const jwt = new BehaviorSubject<string | null>(null);
-  let userData$: Subscription;
+  let sub$: Subscription;
+  const jwt = new BehaviorSubject<JWT | null>(null);
   const userData = new BehaviorSubject<UserData | null>(null);
 
   let firstInput = false;
@@ -61,48 +60,104 @@
              type: ToastType.Error
            });
          }),
-         switchMap(v => userUtils.updateUserDataFromApi$(v))
+         map(v => {
+           const parsedToken = JSON.parse(v) as JWT;
+           jwtUtils.storeJwtToken(parsedToken);
+           return parsedToken;
+         }),
+         switchMap(v => {
+           const decodedJwt = jwtUtils.decodeJwt(v);
+           if(decodedJwt.is_admin === true) {
+             return userUtils.updateUserDataFromApi$(v.accessToken);
+           } else {
+             throw new Error("Unauthorized");
+           }
+         })
        )
-       .subscribe(v => {
-         toastContext.addToast({
-           message: "Pomyślnie zalogowano!",
-           type: ToastType.Success
-         });
-         const redirectTo = getRedirectToPath() ?? "/";
+       .subscribe({
+         next: v => {
+           toastContext.addToast({
+             message: "Pomyślnie zalogowano!",
+             type: ToastType.Success
+           });
+           const redirectTo = getRedirectToPath() ?? "/";
 
-         navigate(redirectTo);
+           navigate(redirectTo);
+         },
+         error: (err: Error) => {
+           if(err.message !== "Unauthorized") {
+             toastContext.addToast({
+               message: "Wystąpił błąd podczas logowania! Spróbuj ponownie później!",
+               type: ToastType.Error
+             });
+           } else {
+             toastContext.addToast({
+               message: "Nie jesteś uprawniony do korzystania z panelu administratorskiego!",
+               type: ToastType.Error
+             });
+           }
+         }
        });
   }
 
-  onMount(() => {
-    jwt$ = jwtUtils.retrieveJwtToken()
-                   .subscribe(v => {
-                     jwt.next(v);
+  function cancelSubscriptions() {
+    if(sub$ !== undefined)
+      sub$.unsubscribe();
 
-                     if(jwt.getValue() !== null) {
+    email.complete();
+    password.complete();
+  }
+  
+  onMount(() => {
+    console.log("Login - on mount.");
+    sub$ = jwtUtils.retrieveJwtToken()
+                   .pipe(
+                     tap(v => {
+                       console.log("Login - JWT subscription.");
+                       jwt.next(v);
+                     }),
+                     switchMap(_jwt => {
+                       console.log(`JWT - ${_jwt}`);
+                       if(_jwt !== null) {
+                         return userUtils.retrieveUserData()
+                                         .pipe(
+                                           tap(v => {
+                                             userData.next(v);
+                                           }),
+                                           switchMap(_userData => {
+                                             if(_userData === null) {
+                                               console.log(`JWT inside of retrieveUserData: ${_jwt}`);
+                                               console.log(typeof _jwt);
+                                               return userUtils.updateUserDataFromApi$(_jwt.accessToken)
+                                                               .pipe(
+                                                                 tap(v => {
+                                                                   userData.next(v);
+                                                                 }),
+                                                                 catchError(err => {
+                                                                   console.error(`Could not update user data from API - ${err.toString()}`);
+                                                                   throw err;
+                                                                 }),
+                                                                 mergeMap(v => of(EMPTY))
+                                                               );
+                                             } else {
+                                               return of(EMPTY);
+                                             }
+                                           })
+                                         );
+                       } else {
+                         return of(EMPTY);
+                       }
+                     }),
+                   )
+                   .subscribe(() => {
+                     if(userData.getValue() !== null) {
+                       console.log(`User data not null - redirecting to dashboard...`);
+                       cancelSubscriptions();
                        navigate("/");
                      }
                    });
 
-    userData$ = userUtils.retrieveUserData()
-                         .subscribe(v => {
-                           userData.next(v);
-
-                           if(userData.getValue() === null && jwt.getValue() !== null) {
-                             userUtils.updateUserDataFromApi$(jwt.getValue() as string)
-                                      .pipe(
-                                        take(1)
-                                      )
-                                      .subscribe(v => {
-                                        userData.next(v);
-
-                                        if(userData.getValue() !== null)
-                                          navigate("/");
-                                      });
-                           }
-                         });
-
-    if(getRedirectToPath() !== null) {
+    if($location.state["showToast"] === true) {
       toastContext.addToast({
         message: "Musisz się zalogować, aby uzyskać dostęp do tej strony.",
         type: ToastType.Warning,
@@ -125,13 +180,8 @@
     });
   });
   onDestroy(() => {
-    if(jwt$ !== undefined)
-      jwt$.unsubscribe();
-    if(userData$ !== undefined)
-      userData$.unsubscribe();
-
-    email.complete();
-    password.complete();
+    console.log("Login - on destroy.");
+    cancelSubscriptions();
   });
 </script>
 
