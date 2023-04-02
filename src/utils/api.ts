@@ -1,8 +1,9 @@
 // TODO: Implement api handling
-import { catchError, defer, forkJoin, from, map, mergeMap, of, throwError } from "rxjs";
+import { catchError, defer, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { promiseToObservable$ } from ".";
-import { clearJwtToken } from "./jwt";
+import { clearJwtToken, type JWT } from "./jwt";
+import { parseFetchedWeeklyMenu, type FetchedLastUpdate, type FetchedWeeklyMenu, type WeeklyMenu } from "./menu";
 import type { UserData } from "./user";
 
 /** Login (create JWT for) user with provided credentials.
@@ -148,11 +149,73 @@ const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL
         })
       );
 
+/** Deletes JWT from local storage, basically resulting in deauthentication.
+ */
 const logout = () => clearJwtToken();
+
+/** Fetches weekly menu from API
+ *
+ * @param token JWT used for authentication
+ *
+ * @returns Observable with value of WeeklyMenu (or null if absent).
+ */
+const getWeeklyMenu = (token: JWT): Observable<WeeklyMenu | null> => fromFetch(
+  `${import.meta.env.VITE_API_URL}/menu/`,
+  {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token.accessToken}`,
+      "Accept": "application/json"
+    },
+    credentials: "include"
+  }
+)
+      .pipe(
+        tap({
+          next: (v: any) => {
+            if(import.meta.env.DEV)
+              console.log(`API/GetWeeklyMenu: Response - ${JSON.stringify(v)}`);
+          },
+          error: (err: unknown) => {
+            console.error(`API/GetWeeklyMenu: Error! ${err}`);
+          }
+        }),
+        map((v: FetchedWeeklyMenu) => parseFetchedWeeklyMenu(v))
+      );
+
+/** Fetch latest menu update
+ * @param token JWT used for user authentication.
+ * @returns Observable with value of FetchedLastUpdate (or null if absent).
+ */
+const getLastMenuUpdate = (token: JWT): Observable<FetchedLastUpdate | null> => fromFetch(
+  `${import.meta.env.VITE_API_URL}/menu/last-update/`,
+  {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token.accessToken}`,
+      "Accept": "application/json"
+    },
+    credentials: "include"
+  }
+)
+      .pipe(
+        tap({
+          next: (v: any) => {
+            if(import.meta.env.DEV)
+              console.log(`API/GetLastMenuUpdate: Response - ${v}`);
+          },
+          error: (err: unknown) => {
+            console.error(`API/GetLastMenuUpdate: Error! ${err}`);
+          }
+        })
+      );
 
 export {
   login,
   register,
   changePassword,
-  getUserData
+  getUserData,
+  logout,
+  getWeeklyMenu,
+  getLastMenuUpdate
 };
