@@ -1,25 +1,29 @@
 <script lang="ts">
   import type { UserData } from "../utils/user";
-  import type { JWT } from "../utils/jwt";
   import { retrieveUserData } from "../utils/user";
-  import { retrieveJwtToken } from "../utils/jwt";
   import type { Subscription } from "rxjs";
   import { onMount, onDestroy } from "svelte";
+  import { useNavigate } from "svelte-navigator";
 
-  let jwt: JWT | null;
+  const navigate = useNavigate();
   let userData: UserData | null;
-  let jwt$: Subscription;
   let userData$: Subscription;
 
   onMount(() => {
-    jwt$ = retrieveJwtToken()
-      .subscribe(v => { jwt = v; });
     userData$ = retrieveUserData()
-      .subscribe(v => { userData = v; });
+      .subscribe(v => {
+        userData = v;
+
+        if(userData === null) {
+          navigate("/auth/login", {
+            state: {
+              redirect: "/"
+            }
+          });
+        }
+      });
   });
   onDestroy(() => {
-    if(jwt$ !== undefined)
-      jwt$.unsubscribe();
     if(userData$ !== undefined)
       userData$.unsubscribe();
   });
