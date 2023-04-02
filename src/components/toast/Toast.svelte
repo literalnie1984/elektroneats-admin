@@ -37,7 +37,8 @@
       background-color: #ffaa00;
     }
     &--error {
-      background-color: #aa0000;
+      background-color: #ff1f00;
+      color: white;
     }
   }
 </style>
