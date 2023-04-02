@@ -1,12 +1,14 @@
 <main class="bg-magnolia">
-  <Router>
-    <SidebarContext>
-      <Sidebar />
-      <section class="content">
-        <Routes />
-      </section>
-    </SidebarContext>
-  </Router>
+  <ToastContext>
+    <Router>
+      <SidebarContext>
+        <Sidebar />
+        <section class="content">
+          <Routes />
+        </section>
+      </SidebarContext>
+    </Router>
+  </ToastContext>
 </main>
 
 <script lang="ts">
@@ -14,6 +16,7 @@
   import Routes from "./routes/Routes.svelte";
   import SidebarContext from "./components/SidebarContext.svelte";
   import Sidebar from "./components/Sidebar.svelte";
+  import ToastContext from "@/components/toast/ToastContext.svelte";
 </script>
 
 <style>
