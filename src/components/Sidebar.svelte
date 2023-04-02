@@ -25,13 +25,13 @@
     {
       label: "Jadłospis",
       icon: faUtensils,
-      onClick: () => navigate("/menu"),
+      onClick: () => navigate("/menu/"),
       path: "^/menu"
     },
     {
       label: "Posiłki",
       icon: faBowlFood,
-      onClick: () => navigate("/dinners"),
+      onClick: () => navigate("/dinners/"),
       path: "^/dinners"
     }
   ];

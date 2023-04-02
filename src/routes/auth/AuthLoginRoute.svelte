@@ -125,8 +125,10 @@
     });
   });
   onDestroy(() => {
-    jwt$.unsubscribe();
-    userData$.unsubscribe();
+    if(jwt$ !== undefined)
+      jwt$.unsubscribe();
+    if(userData$ !== undefined)
+      userData$.unsubscribe();
 
     email.complete();
     password.complete();
