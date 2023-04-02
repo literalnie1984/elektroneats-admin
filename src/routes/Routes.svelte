@@ -32,13 +32,15 @@
     transition:scale="{{ duration: 300, start: 50 }}"
     class="route"
   >
-    <Route path="/auth/*">
-      <Route path="login">
-        <AuthLoginRoute />
-      </Route>
+    <Route path="/auth/login">
+      <AuthLoginRoute />
     </Route>
-    <Route path="/menu/*"></Route>
-    <Route path="/dinners/*"></Route>
+    <Route path="/menu">
+      <h1>Menu index route</h1>
+    </Route>
+    <Route path="/dinners">
+      <h1>Dinners index route</h1>
+    </Route>
     <Route path="/">
       <DashboardRoute />
     </Route>
