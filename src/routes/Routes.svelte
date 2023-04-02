@@ -4,7 +4,12 @@
   import { storeToObservable$ } from "../utils";
   import type { Subscription } from "rxjs";
   import { scale } from "svelte/transition";
+
+  //#region Routes
   import DashboardRoute from "./DashboardRoute.svelte";
+
+  import AuthLoginRoute from "./auth/AuthLoginRoute.svelte";
+  //#endregion
   
   const location = useLocation();
   let locationKey: string;
@@ -29,10 +34,7 @@
   >
     <Route path="/auth/*">
       <Route path="login">
-        <h1>Login route</h1>
-      </Route>
-      <Route path="register">
-        <h1>Register route</h1>
+        <AuthLoginRoute />
       </Route>
     </Route>
     <Route path="/menu/*"></Route>
