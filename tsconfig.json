@@ -14,7 +14,18 @@
     "allowJs": true,
     "checkJs": true,
     "isolatedModules": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@": ["src"],
+      "@/*": ["src/*"],
+      "@/utils": [ "src/utils" ],
+      "@/utils/*": [ "src/utils/*" ],
+      "@/components": [ "src/components" ],
+      "@/components/*": [ "src/components/*" ],
+      "@/routes": [ "src/routes" ],
+      "@/routes/*": [ "src/routes/*" ],
+    }
   },
   "include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "postcss.config.ts", "tailwind.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
