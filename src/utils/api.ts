@@ -4,6 +4,7 @@ import { fromFetch } from "rxjs/fetch";
 import { promiseToObservable$ } from ".";
 import { clearJwtToken, storeJwtToken, type JWT } from "./jwt";
 import { parseFetchedWeeklyMenu, type FetchedLastUpdate, type FetchedWeeklyMenu, type WeeklyMenu } from "./menu";
+import type { OrderResponse } from "./orders";
 import type { UserData } from "./user";
 
 const refreshToken = (token: JWT) => fromFetch(
@@ -343,6 +344,34 @@ const updateDish = (token: JWT, id: number, name: string | null, price: number |
         })
       );
 
+const getOrders = (token: JWT): Observable<OrderResponse> => fromFetch(
+  `${import.meta.env.VITE_API_URL}/admin/orders`,
+  {
+    headers: {
+      Authorization: `Bearer ${token.accessToken}`,
+      Accept: "application/json"
+    },
+    method: "GET",
+    credentials: "include"
+  }
+)
+      .pipe(
+        switchMap(res => {
+          if(res.status < 400) {
+            return promiseToObservable$(res.json());
+          } else {
+            if(res.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => getOrders(v))
+                );
+            } else {
+              throw new Error("API error");
+            }
+          }
+        })
+      );
+
 export {
   login,
   register,
@@ -352,5 +381,6 @@ export {
   getWeeklyMenu,
   getWeeklyMenuRaw,
   getLastMenuUpdate,
-  updateDish
+  updateDish,
+  getOrders
 };
