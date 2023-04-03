@@ -13,6 +13,8 @@
   import RouteWrapper from "../RouteWrapper.svelte";
 
   import MenuItem from "@/components/menu/MenuItem.svelte";
+    import Fa from "svelte-fa";
+    import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
   let fetchStatus: "pending" | "success" | "error" = "pending";
   
@@ -113,9 +115,10 @@
       </section>
     {:else}
       <section class="menu__error w-full h-full flex flex-col justify-center items-center">
-        <article class="menu__error__box w-[50%] h-[50%] bg-coral flex flex-col justify-center items-center">
+        <article class="menu__error__box w-[75%] h-[75%] bg-coral flex flex-col justify-center items-center rounded-xl text-6xl text-center">
+          <Fa icon={faExclamationTriangle} />
           <h2
-            class="text-3xl"
+            class="text-3xl text-center mt-4"
           >
             Nie udało się wczytać jadłospisu. Spróbuj ponownie później.
           </h2>

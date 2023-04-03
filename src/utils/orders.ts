@@ -26,7 +26,26 @@ export interface OrderInfo {
 }
 
 export interface OrderResponse {
-  response: OrderInfo;
+  response: OrderInfo[];
   dinners: FetchedMeal[];
   extras: FetchedExtra[];
+}
+
+export function orderStatusToString(status: OrderStatus) {
+  switch(status) {
+  case OrderStatus.Paid:
+    return "Opłacone";
+    break;
+  case OrderStatus.Prepared:
+    return "Przygotowane";
+    break;
+  case OrderStatus.Ready:
+    return "Gotowe";
+    break;
+  case OrderStatus.Collected:
+    return "Odebrane";
+    break;
+  default:
+    return "Nieznane";
+  }
 }
