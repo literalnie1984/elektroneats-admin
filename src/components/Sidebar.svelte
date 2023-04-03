@@ -128,13 +128,13 @@
     justify-content: center;
     align-items: center;
     transition: width .2s;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
 
     &.expanded {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 250px;
-      z-index: 999;
     }
 
     &__items {

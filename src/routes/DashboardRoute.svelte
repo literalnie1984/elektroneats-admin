@@ -5,6 +5,8 @@
   import { onMount, onDestroy } from "svelte";
   import { useNavigate } from "svelte-navigator";
 
+  import RouteWrapper from "./RouteWrapper.svelte";
+
   const navigate = useNavigate();
   let userData: UserData | null;
   let userData$: Subscription;
@@ -39,14 +41,16 @@
   });
 </script>
 
-<section class="dashboard-route">
-  <header class="dashboard-route__header">
-    <h1 class="w-[80%] text-5xl text-center m-2 mx-auto bg-saffron rounded-md p-4">
-      {#if userData}
-      Witaj, {userData.username}!
-      {:else}
-      Witaj!
-      {/if}
-    </h1>
-  </header>
-</section>
+<RouteWrapper>
+  <section class="dashboard-route w-full h-full">
+    <header class="dashboard-route__header">
+      <h1 class="w-[80%] text-5xl text-center m-2 mx-auto bg-saffron rounded-md p-4">
+        {#if userData}
+          Witaj, {userData.username}!
+        {:else}
+          Witaj!
+        {/if}
+      </h1>
+    </header>
+  </section>
+</RouteWrapper>

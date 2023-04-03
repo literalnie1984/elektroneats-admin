@@ -13,6 +13,8 @@
   import { EMAIL_REGEX } from "@/utils";
   import * as API from "@/utils/api";
 
+  import RouteWrapper from "../RouteWrapper.svelte";
+
   const navigate = useNavigate();
   const location = useLocation();
   const toastContext = getContext<ToastContext>("toastContext");
@@ -185,74 +187,76 @@
   });
 </script>
 
-<section class="auth-login-route w-full h-full flex flex-col items-center">
-  <h1
-    class="text-center text-6xl w-[90%] m-8 p-4 bg-saffron rounded-xl"
-  >
-    Logowanie
-  </h1>
-  <form
-    class="login__form w-[90%] p-4 my-auto border-chestnut border-4 rounded-xl"
-    on:submit={submitForm}
-  >
-    {#if isValidated === false && firstInput}
-    <section
-      class="login__form__validators w-full flex flex-col items-center"
+<RouteWrapper>
+  <section class="auth-login-route w-full h-full flex flex-col items-center">
+    <h1
+      class="text-center text-6xl w-[90%] m-8 p-4 bg-saffron rounded-xl"
     >
-      {#if !isEmailNotEmpty}
-      <article
-        class="login__form__validator login__form__validator--email-empty"
-      >
-        Adres e-mail nie może być pusty!
-      </article>
-      {/if}
-      {#if !isEmailValid}
-      <article
-        class="login__form__validator login__form__validator--email-invalid"
-      >
-        Adres e-mail jest niepoprawny!
-      </article>
-      {/if}
-      {#if !isPasswordNotEmpty}
-      <article
-        class="login__form__validator login__form__validator--password-empty"
-      >
-        Hasło nie może być puste!
-      </article>
-      {/if}
-    </section>
-    {/if}
-    <section
-      class="login__form__group login__form__group--email"
+      Logowanie
+    </h1>
+    <form
+      class="login__form w-[90%] p-4 my-auto border-chestnut border-4 rounded-xl"
+      on:submit={submitForm}
     >
-      <label for="login__form__email">Adres e-mail</label>
-      <input
-        type="email"
-        id="login__form__email"
-        on:input={e => { email.next(e.currentTarget.value) }}
+      {#if isValidated === false && firstInput}
+        <section
+          class="login__form__validators w-full flex flex-col items-center"
+        >
+          {#if !isEmailNotEmpty}
+            <article
+              class="login__form__validator login__form__validator--email-empty"
+            >
+              Adres e-mail nie może być pusty!
+            </article>
+          {/if}
+          {#if !isEmailValid}
+            <article
+              class="login__form__validator login__form__validator--email-invalid"
+            >
+              Adres e-mail jest niepoprawny!
+            </article>
+          {/if}
+          {#if !isPasswordNotEmpty}
+            <article
+              class="login__form__validator login__form__validator--password-empty"
+            >
+              Hasło nie może być puste!
+            </article>
+          {/if}
+        </section>
+      {/if}
+      <section
+        class="login__form__group login__form__group--email"
+      >
+        <label for="login__form__email">Adres e-mail</label>
+        <input
+          type="email"
+          id="login__form__email"
+          on:input={e => { email.next(e.currentTarget.value) }}
         value={ emailValue }
-      />
-    </section>
-    <section
-      class="login__form__group login__form__group--password"
-    >
-      <label for="login__form__password">Hasło</label>
-      <input
-        type="password"
-        id="login__form__password"
-        on:input={e => { password.next(e.currentTarget.value) }}
+        />
+      </section>
+      <section
+        class="login__form__group login__form__group--password"
+      >
+        <label for="login__form__password">Hasło</label>
+        <input
+          type="password"
+          id="login__form__password"
+          on:input={e => { password.next(e.currentTarget.value) }}
         value={ passwordValue }
-      />
-    </section>
-    <button
-      type="submit"
-      class="login__form__submit w-full mx-8 hover:bg-coral-light2 bg-coral text-2xl p-2 rounded-md mt-4 transition-[background-color] disabled:bg-chestnut disabled:text-white"
-      disabled={!isValidated}
-    >
-      Zaloguj
-    </button>
-  </form>
-</section>
+        />
+      </section>
+      <button
+        type="submit"
+        class="login__form__submit w-full mx-8 hover:bg-coral-light2 bg-coral text-2xl p-2 rounded-md mt-4 transition-[background-color] disabled:bg-chestnut disabled:text-white"
+        disabled={!isValidated}
+      >
+        Zaloguj
+      </button>
+    </form>
+  </section>
+</RouteWrapper>
 
 <style lang="scss">
   .login__form {

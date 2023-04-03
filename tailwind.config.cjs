@@ -4,7 +4,11 @@ module.exports = {
     extend: {
       colors: {
         gunmetal: "#292f36ff",
-        saffron: "#f2c14eff",
+        saffron: {
+          DEFAULT: "#f2c14eff",
+          "dark": "#efb429",
+          "dark2": "#e1a310"
+        },
         coral: {
           DEFAULT: "#f78154ff",
           "light": "#f99d79",

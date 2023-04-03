@@ -171,6 +171,7 @@ const getWeeklyMenu = (token: JWT): Observable<WeeklyMenu | null> => fromFetch(
   }
 )
       .pipe(
+        switchMap(v => promiseToObservable$(v.json())),
         tap({
           next: (v: any) => {
             if(import.meta.env.DEV)
@@ -180,7 +181,12 @@ const getWeeklyMenu = (token: JWT): Observable<WeeklyMenu | null> => fromFetch(
             console.error(`API/GetWeeklyMenu: Error! ${err}`);
           }
         }),
-        map((v: FetchedWeeklyMenu) => parseFetchedWeeklyMenu(v))
+        map((v: FetchedWeeklyMenu) => parseFetchedWeeklyMenu(v)),
+        tap({
+          next: (v: WeeklyMenu | null) => {
+            console.log(`API/GetWeeklyMenu: Parsed weekly menu - ${JSON.stringify(v)}`);
+          }
+        })
       );
 
 /** Fetch latest menu update

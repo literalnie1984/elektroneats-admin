@@ -31,17 +31,16 @@
 
 <style>
   main {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      grid-template-rows: 1fr;
-      grid-template-columns: auto 1fr;
-      grid-template-areas: "sidebar content";
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
   }
 
   .content {
-      grid-area: content;
-      width: 100%;
-      height: 100%;
+    width: calc(100% - 50px);
+    height: 100%;
   }
 </style>

@@ -121,3 +121,25 @@ export function getWeeklyMenu(): Observable<WeeklyMenu | null> {
       })
     );
 }
+
+export function mapWeekDayNumberToName(weekDayNumber: number): string {
+  switch(weekDayNumber) {
+  case 0:
+    return "Poniedziałek";
+    break;
+  case 1:
+    return "Wtorek";
+    break;
+  case 2:
+    return "Środa";
+    break;
+  case 3:
+    return "Czwartek";
+    break;
+  case 4:
+    return "Piątek";
+    break;
+  default:
+    return "Nieznany";
+  }
+}
