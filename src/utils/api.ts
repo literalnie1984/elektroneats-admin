@@ -4,7 +4,7 @@ import { fromFetch } from "rxjs/fetch";
 import { promiseToObservable$ } from ".";
 import { clearJwtToken, storeJwtToken, type JWT } from "./jwt";
 import { parseFetchedWeeklyMenu, type FetchedLastUpdate, type FetchedWeeklyMenu, type WeeklyMenu } from "./menu";
-import type { OrderResponse } from "./orders";
+import type { OrderResponse, OrderStatus } from "./orders";
 import type { UserData } from "./user";
 
 const refreshToken = (token: JWT) => fromFetch(
@@ -345,7 +345,7 @@ const updateDish = (token: JWT, id: number, name: string | null, price: number |
       );
 
 const getOrders = (token: JWT): Observable<OrderResponse> => fromFetch(
-  `${import.meta.env.VITE_API_URL}/admin/orders`,
+  `${import.meta.env.VITE_API_URL}/admin/orders/`,
   {
     headers: {
       Authorization: `Bearer ${token.accessToken}`,
@@ -372,6 +372,34 @@ const getOrders = (token: JWT): Observable<OrderResponse> => fromFetch(
         })
       );
 
+const changeOrderStatus = (token: JWT, id: number, status: OrderStatus): Observable<null> => fromFetch(
+  `${import.meta.env.VITE_API_URL}/admin/orders/${id}/status`,
+  {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token.accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      newStatus: status
+    })
+  }
+)
+      .pipe(
+        switchMap(v => {
+          if(v.status < 400) {
+            return of(null);
+          } else {
+            if(v.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => changeOrderStatus(v, id, status))
+                );
+            }
+          }
+        })
+      );
+
 export {
   login,
   register,
@@ -382,5 +410,6 @@ export {
   getWeeklyMenuRaw,
   getLastMenuUpdate,
   updateDish,
-  getOrders
+  getOrders,
+  changeOrderStatus
 };

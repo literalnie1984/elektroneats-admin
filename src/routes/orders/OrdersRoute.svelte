@@ -86,8 +86,8 @@
 </script>
 
 <RouteWrapper>
-  <section class="orders-route">
-    <div class="orders-route__content flex flex-col flex-nowrap items-center">
+  <section class="orders-route h-full w-full overflow-y-auto">
+    <div class="orders-route__content h-full w-full flex flex-col flex-nowrap items-center">
       <h1
         class="text-6xl text-center w-full mb-4"
       >
@@ -124,25 +124,29 @@
         </button>
       </div>
       {#if fetchStatus === "success"}
-      <section class="orders__list">
+      <section class="orders__list h-full w-full flex flex-col flex-nowrap items-center">
         {#each getOrdersByStatus(ordersType) as order}
-          {#each order.orders as details}
-            <OrderItem
-              dinners={ordersData.dinners}
-              extras={ordersData.extras}
-              details={details}
-              userId={order.user_id}
-              username={order.username}
-            />
-          {/each}
+          {#if order.orders.length > 0}
+            {#each order.orders as details}
+              <OrderItem
+                dinners={ordersData.dinners}
+                extras={ordersData.extras}
+                details={details}
+                userId={order.user_id}
+                username={order.username}
+              />
+            {/each}
+        {:else}
+            <h1 class="text-4xl text-center w-full h-full flex flex-col items-center justify-center flex-nowrap">Brak zamówień.</h1>
+          {/if}
         {/each}
       </section>
       {:else if fetchStatus === "error"}
-      <section class="orders__error">
+      <section class="orders__error w-full h-full flex flex-col flex-nowrap justify-center items-center">
         <h2 class="text-3xl text-center w-full">Nie udało się wczytać zamówień. Spróbuj ponownie później.</h2>
       </section>
       {:else}
-      <section class="orders__pending">
+      <section class="orders__pending w-full h-full flex flex-col flex-nowrap justify-center items-center">
         <h2 class="text-3xl text-center w-full">Wczytywanie zamówień...</h2>
       </section>
       {/if}

@@ -26,10 +26,10 @@
 </script>
 
 <button
-  class="order-item bg-saffron"
+  class="order-item bg-saffron w-full p-4 my-2"
   on:click={() => gotoOrderDetails()}
 >
   <h1 class="text-2xl text-center w-full">{ details.orderId }</h1>
   <h2 class="text-xl text-center w-full">{ username }</h2>
-  <h2 class="text-xl bg-saffron-dark p-2 mt-4 text-center">{ orderStatusToString(details.status) }</h2>
+  <h2 class="text-xl bg-saffron-dark2 p-2 mt-4 text-center">{ orderStatusToString(details.status) }</h2>
 </button>

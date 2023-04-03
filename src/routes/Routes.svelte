@@ -14,6 +14,7 @@
   import MenuItemRoute from "./menu/MenuItemRoute.svelte";
 
   import OrdersRoute from "./orders/OrdersRoute.svelte";
+  import OrderDetailsRoute from "./orders/OrderDetailsRoute.svelte";
   //#endregion
   
   const location = useLocation();
@@ -40,6 +41,9 @@
   </Route>
   <Route path="/menu">
     <MenuRoute />
+  </Route>
+  <Route path="/orders/details">
+    <OrderDetailsRoute />
   </Route>
   <Route path="/orders">
     <OrdersRoute />
