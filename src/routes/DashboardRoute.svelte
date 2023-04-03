@@ -32,6 +32,8 @@
               showToast: true
             }
           });
+        } else {
+          navigate("/orders");
         }
       });
   });
@@ -41,16 +43,4 @@
   });
 </script>
 
-<RouteWrapper>
-  <section class="dashboard-route w-full h-full">
-    <header class="dashboard-route__header">
-      <h1 class="w-[80%] text-5xl text-center m-2 mx-auto bg-saffron rounded-md p-4">
-        {#if userData}
-          Witaj, {userData.username}!
-        {:else}
-          Witaj!
-        {/if}
-      </h1>
-    </header>
-  </section>
-</RouteWrapper>
+<div></div>

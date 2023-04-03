@@ -70,7 +70,7 @@
          switchMap(v => {
            const decodedJwt = jwtUtils.decodeJwt(v);
            if(decodedJwt.is_admin === true) {
-             return userUtils.updateUserDataFromApi$(v.accessToken);
+             return userUtils.updateUserDataFromApi$(v);
            } else {
              throw new Error("Unauthorized");
            }
@@ -114,8 +114,9 @@
     console.log("Login - on mount.");
     sub$ = jwtUtils.retrieveJwtToken()
                    .pipe(
+                     take(1),
                      tap(v => {
-                       console.log("Login - JWT subscription.");
+                       console.log(`Login - JWT subscription. ${JSON.stringify(v)}`);
                        jwt.next(v);
                      }),
                      switchMap(_jwt => {
@@ -123,15 +124,17 @@
                        if(_jwt !== null) {
                          return userUtils.retrieveUserData()
                                          .pipe(
+                                           take(1),
                                            tap(v => {
                                              userData.next(v);
                                            }),
                                            switchMap(_userData => {
                                              if(_userData === null) {
-                                               console.log(`JWT inside of retrieveUserData: ${_jwt}`);
-                                               console.log(typeof _jwt);
-                                               return userUtils.updateUserDataFromApi$(_jwt.accessToken)
+                                               console.log(`JWT inside of retrieveUserData: ${JSON.stringify(_jwt)}`);
+                                               console.log(_jwt.accessToken);
+                                               return userUtils.updateUserDataFromApi$(_jwt)
                                                                .pipe(
+                                                                 take(1),
                                                                  tap(v => {
                                                                    userData.next(v);
                                                                  }),
@@ -152,6 +155,7 @@
                      }),
                    )
                    .subscribe(() => {
+                     console.log(`${userData.getValue()} - ${JSON.stringify(userData.getValue())}`);
                      if(userData.getValue() !== null) {
                        console.log(`User data not null - redirecting to dashboard...`);
                        cancelSubscriptions();

@@ -6,6 +6,7 @@
     icon: IconDefinition;
     onClick: () => void;
     path?: string;
+    forceShow?: boolean;
   }
 
   export type {
@@ -32,6 +33,12 @@
   onDestroy(() => {
     sidebarExpanded$.unsubscribe();
   })
+
+  function onClick() {
+    if(item.forceShow !== true)
+      sidebarContext.toggleSidebar(false);
+    item.onClick();
+  }
   
   export let item: SidebarItem;
   export let className: string = "";
@@ -40,7 +47,7 @@
 <button
   class={`sidebar__item ${className}`}
   class:sidebar__item--active={item.path !== undefined && $location.pathname.match(item.path)}
-  on:click={() => item.onClick()}
+  on:click={() => onClick()}
 >
   <Fa icon={ item.icon } />
   {#if expanded}

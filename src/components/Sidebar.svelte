@@ -10,7 +10,7 @@
   import type { UserData } from "@/utils/user";
   import { retrieveUserData } from "@/utils/user";
   import type ToastContext from "./toast/ToastContext.svelte";
-  import { faBars, faHome, faUtensils, faBowlFood, faKey, faUser } from "@fortawesome/free-solid-svg-icons";
+  import { faBars, faHome, faUtensils, faKey, faUser, faList } from "@fortawesome/free-solid-svg-icons";
   import { ToastType } from "./toast/ToastContext.svelte";
   
   const navigate = useNavigate();
@@ -24,26 +24,21 @@
 
   const sidebarItems: ISidebarItem[] = [
     {
-      label: "Menu główne",
-      icon: faHome,
-      onClick: () => navigate("/"),
-      path: "^/$"
+      label: "Zamówienia",
+      icon: faList,
+      onClick: () => navigate("/orders/"),
+      path: "^/orders"
     },
     {
       label: "Jadłospis",
       icon: faUtensils,
       onClick: () => navigate("/menu/"),
       path: "^/menu"
-    },
-    {
-      label: "Posiłki",
-      icon: faBowlFood,
-      onClick: () => navigate("/dinners/"),
-      path: "^/dinners"
     }
   ];
-
+  
   function accountOnClick() {
+    sidebarContext.toggleSidebar();
     if(userData$.getValue() === null) {
       navigate("/auth/login", {
         state: {
@@ -88,7 +83,8 @@
     item={{
            label: "Zwiń menu",
            icon: faBars,
-           onClick: () => sidebarContext.toggleSidebar()
+           onClick: () => sidebarContext.toggleSidebar(),
+           forceShow: true
          }}
   />
   <section class="sidebar__items">

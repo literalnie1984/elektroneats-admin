@@ -12,6 +12,8 @@
 
   import MenuRoute from "./menu/MenuRoute.svelte";
   import MenuItemRoute from "./menu/MenuItemRoute.svelte";
+
+  import OrdersRoute from "./orders/OrdersRoute.svelte";
   //#endregion
   
   const location = useLocation();
@@ -39,8 +41,8 @@
   <Route path="/menu">
     <MenuRoute />
   </Route>
-  <Route path="/dinners">
-    <h1>Dinners index route</h1>
+  <Route path="/orders">
+    <OrdersRoute />
   </Route>
   <Route path="/">
     <DashboardRoute />

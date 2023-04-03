@@ -2,9 +2,37 @@
 import { catchError, defer, forkJoin, from, map, mergeMap, Observable, of, switchMap, tap, throwError } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { promiseToObservable$ } from ".";
-import { clearJwtToken, type JWT } from "./jwt";
+import { clearJwtToken, storeJwtToken, type JWT } from "./jwt";
 import { parseFetchedWeeklyMenu, type FetchedLastUpdate, type FetchedWeeklyMenu, type WeeklyMenu } from "./menu";
 import type { UserData } from "./user";
+
+const refreshToken = (token: JWT) => fromFetch(
+  `${import.meta.env.VITE_API_URL}/user/refresh-token`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      refreshToken: token.refreshToken
+    })
+  }
+)
+      .pipe(
+        mergeMap(v => {
+          if(v.status < 400) {
+            return promiseToObservable$(v.json())
+          } else {
+            throw new Error("API error");
+          }
+        }),
+        tap({
+          next: (v: JWT) => {
+            storeJwtToken(v);
+          }
+        })
+      )
 
 /** Login (create JWT for) user with provided credentials.
  *
@@ -87,9 +115,9 @@ const register = (email: string, password: string, username: string) => fromFetc
  *
  * @returns An Observable with value of null on success.
  */
-const changePassword = (token: string, newPassword: string, oldPassword: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/change-password`, {
+const changePassword = (token: JWT, newPassword: string, oldPassword: string): Observable<null> => fromFetch(`${import.meta.env.VITE_API_URL}/user/password`, {
   headers: {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${token.accessToken}`,
     "Content-Type": "application/json"
   },
   method: "POST",
@@ -104,12 +132,21 @@ const changePassword = (token: string, newPassword: string, oldPassword: string)
           console.error(`API/Register: Error! ${err}`);
           throw new Error(err);
         }),
-        map(res => {
+        mergeMap(res => {
           if(res.status === 200) {
-            return null;
+            return of(null);
           } else {
-            console.error(`API/ChangePassword: Negative response! ${res.status}`);
-            throw new Error(res.status.toString());
+            if(res.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => {
+                    return changePassword(v, oldPassword, newPassword);
+                  })
+                );
+            } else {
+              console.error(`API/ChangePassword: Negative response! ${res.status}`);
+              throw new Error(res.status.toString());
+            }
           }
         })
       );
@@ -120,10 +157,10 @@ const changePassword = (token: string, newPassword: string, oldPassword: string)
  *
  * @returns An Observable with value of UserData
  */
-const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL}/user/data`, {
+const getUserData = (token: JWT): Observable<UserData | null> => fromFetch(`${import.meta.env.VITE_API_URL}/user/data`, {
   method: "GET",
   headers: {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${token.accessToken}`,
   },
   credentials: "include"
 })
@@ -136,8 +173,15 @@ const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL
           if(res.status === 200) {
             return promiseToObservable$(res.json());
           } else {
-            console.error(`API/ChangePassword: Negative response! ${res.status}`);
-            throw new Error(res.status.toString());
+            if(res.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => getUserData(v))
+                );
+            } else {
+              console.error(`API/ChangePassword: Negative response! ${res.status}`);
+              throw new Error(res.status.toString());
+            }
           }
         }),
         catchError((err) => {
@@ -153,25 +197,32 @@ const getUserData = (token: string) => fromFetch(`${import.meta.env.VITE_API_URL
  */
 const logout = () => clearJwtToken();
 
-/** Fetches weekly menu from API
- *
- * @param token JWT used for authentication
- *
- * @returns Observable with value of WeeklyMenu (or null if absent).
- */
-const getWeeklyMenu = (token: JWT): Observable<WeeklyMenu | null> => fromFetch(
+const getWeeklyMenuRaw = (token: JWT): Observable<FetchedWeeklyMenu | null> => fromFetch(
   `${import.meta.env.VITE_API_URL}/menu/`,
   {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${token.accessToken}`,
-      "Accept": "application/json"
+      Authorization: `Bearer ${token.accessToken}`,
+      Accept: "application/json"
     },
     credentials: "include"
   }
 )
       .pipe(
-        switchMap(v => promiseToObservable$(v.json())),
+        switchMap(v => {
+          if(v.status < 400) {
+            return promiseToObservable$(v.json())
+          } else {
+            if(v.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => getWeeklyMenuRaw(v))
+                );
+            } else {
+              throw new Error("API error");
+            }
+          }
+        }),
         tap({
           next: (v: any) => {
             if(import.meta.env.DEV)
@@ -181,7 +232,25 @@ const getWeeklyMenu = (token: JWT): Observable<WeeklyMenu | null> => fromFetch(
             console.error(`API/GetWeeklyMenu: Error! ${err}`);
           }
         }),
-        map((v: FetchedWeeklyMenu) => parseFetchedWeeklyMenu(v)),
+      );
+
+
+/** Fetches weekly menu from API
+ *
+ * @param token JWT used for authentication
+ *
+ * @returns Observable with value of WeeklyMenu (or null if absent).
+ */
+const getWeeklyMenu = (token: JWT): Observable<WeeklyMenu | null> => getWeeklyMenuRaw(token)
+      .pipe(
+        map((v: FetchedWeeklyMenu | null) => {
+          if(v !== null) {
+            return parseFetchedWeeklyMenu(v);
+          }
+          else {
+            return null;
+          }
+        }),
         tap({
           next: (v: WeeklyMenu | null) => {
             console.log(`API/GetWeeklyMenu: Parsed weekly menu - ${JSON.stringify(v)}`);
@@ -205,6 +274,20 @@ const getLastMenuUpdate = (token: JWT): Observable<FetchedLastUpdate | null> => 
   }
 )
       .pipe(
+        switchMap(v => {
+          if(v.status < 400) {
+            return promiseToObservable$(v.json());
+          } else {
+            if(v.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => getLastMenuUpdate(v))
+                );
+            } else {
+              throw new Error("API error");
+            }
+          }
+        }),
         tap({
           next: (v: any) => {
             if(import.meta.env.DEV)
@@ -216,6 +299,50 @@ const getLastMenuUpdate = (token: JWT): Observable<FetchedLastUpdate | null> => 
         })
       );
 
+const updateDish = (token: JWT, id: number, name: string | null, price: number | null, image: string | null, maxSupply: number | null, weekDay: string | null): Observable<null> => fromFetch(
+  `${import.meta.env.VITE_API_URL}/admin/dish`,
+  {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      id,
+      name,
+      price,
+      image,
+      maxSupply,
+      weekDay
+    })
+  }
+)
+      .pipe(
+        tap({
+          error: err => {
+            console.error(`API/UpdateDish: Error! ${err}`);
+          }
+        }),
+        switchMap(v => {
+          if(v.status < 400) {
+            return promiseToObservable$(v.text())
+              .pipe(
+                switchMap(v => of(null))
+              );
+          } else {
+            if(v.status === 401) {
+              return refreshToken(token)
+                .pipe(
+                  switchMap(v => updateDish(v, id, name, price, image, maxSupply, weekDay))
+                );
+            } else {
+              throw new Error("API error");
+            }
+          }
+        })
+      );
+
 export {
   login,
   register,
@@ -223,5 +350,7 @@ export {
   getUserData,
   logout,
   getWeeklyMenu,
-  getLastMenuUpdate
+  getWeeklyMenuRaw,
+  getLastMenuUpdate,
+  updateDish
 };

@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
   interface SidebarContext {
-    toggleSidebar: () => void;
+    toggleSidebar: (state?: boolean) => void;
     sidebarExpanded: Writable<boolean>;
   }
 
@@ -17,8 +17,11 @@
   
   const sidebarContext: SidebarContext = setContext<SidebarContext>("sidebarContext", {
     sidebarExpanded,
-    toggleSidebar: () => {
-      sidebarExpanded.update(v => !v);
+    toggleSidebar: (state?: boolean) => {
+      if(state !== undefined)
+        sidebarExpanded.update(v => state);
+      else
+        sidebarExpanded.update(v => !v);
     }
   });
 </script>

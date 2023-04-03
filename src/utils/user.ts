@@ -1,4 +1,4 @@
-import type { ParsedJWT } from "./jwt";
+import type { JWT, ParsedJWT } from "./jwt";
 import { BehaviorSubject, tap } from "rxjs";
 import * as API from "@/utils/api";
 
@@ -37,7 +37,9 @@ const loadUserData = () => {
  *
  * @returns Observable with value of UserData
  */
-const updateUserDataFromApi$ = (token: string) => {
+const updateUserDataFromApi$ = (token: JWT) => {
+  console.log(`updateUserDataFromApi - JWT: ${JSON.stringify(token)}`);
+  
   return API.getUserData(token)
     .pipe(
       tap(v => {
